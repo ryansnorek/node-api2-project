@@ -18,7 +18,6 @@ router.get("/:id", async (req, res) => {
     try {
         const post = await Posts.findById(req.params.id);
         if (post) return res.status(200).json(post);
-
         res.status(404).json({ message: "The post with the specified ID does not exist" });
     } catch (e) {
         res.status(500).json({ message: "The post information could not be retrieved" });
@@ -30,7 +29,8 @@ router.post("/", async (req, res) => {
         return res.status(400).json({ message: "Please provide title and contents for the post" });
     }
     try {
-        const newPost = await Posts.insert(req.body);
+        const body = await Posts.insert(req.body);
+        const newPost = { ...body, ...req.body };
         res.status(201).json(newPost);
     } catch (e) {
         res.status(500).json({ message: "There was an error while saving the post to the database" });
@@ -44,7 +44,8 @@ router.put("/:id", async (req, res) => {
     try {
         const postExists = await Posts.findById(req.params.id);
         if (postExists) {
-            const updatedPost = await Posts.update(req.params.id, req.body);
+            await Posts.update(req.params.id, req.body);
+            const updatedPost = await Posts.findById(req.params.id);
             return res.status(200).json(updatedPost);
         }
         res.status(404).json({ message: "The post with the specified ID does not exist" });
@@ -57,7 +58,7 @@ router.delete("/:id", async (req, res) => {
     try {
         const postExists = await Posts.findById(req.params.id);
         if (postExists) {
-            const deletePost = await Posts.delete(req.params.id);
+            const deletePost = await Posts.remove(req.params.id);
             return res.status(200).json(deletePost);
         }
         res.status(404).json({ message: "The post with the specified ID does not exist"});
@@ -65,13 +66,13 @@ router.delete("/:id", async (req, res) => {
         res.status(500).json({ message: "The post could not be removed" });
     }
 })
-// GET	/api/posts/:id/comments
+// GET comments from post id
 router.get("/:id/comments", async (req, res) => {
     try {
         const post = await Posts.findById(req.params.id);
         if (post) {
-            const comment = await Posts.findCommentById(req.params.id);
-            return res.status(200).json(comment);
+            const comments = await Posts.findCommentById(req.params.id);
+            return res.status(200).json(comments);
         }
         res.status(404).json({ message: "The post with the specified ID does not exist" });
     } catch (e) {
