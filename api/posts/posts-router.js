@@ -42,8 +42,8 @@ router.put("/:id", async (req, res) => {
         return res.status(400).json({ message: "Please provide title and contents for the post" });
     }
     try {
-        const postExists = await Posts.findById(req.params.id);
-        if (postExists) {
+        const postToUpdate = await Posts.findById(req.params.id);
+        if (postToUpdate) {
             await Posts.update(req.params.id, req.body);
             const updatedPost = await Posts.findById(req.params.id);
             return res.status(200).json(updatedPost);
@@ -56,10 +56,11 @@ router.put("/:id", async (req, res) => {
 // DELETE post
 router.delete("/:id", async (req, res) => {
     try {
-        const postExists = await Posts.findById(req.params.id);
-        if (postExists) {
-            const deletePost = await Posts.remove(req.params.id);
-            return res.status(200).json(deletePost);
+        const postToDelete = await Posts.findById(req.params.id);
+        if (postToDelete) {
+            const deletedPost = { ...postToDelete }
+            await Posts.remove(req.params.id);
+            return res.status(200).json(deletedPost);
         }
         res.status(404).json({ message: "The post with the specified ID does not exist"});
     } catch (e) {
@@ -72,7 +73,9 @@ router.get("/:id/comments", async (req, res) => {
         const post = await Posts.findById(req.params.id);
         if (post) {
             const comments = await Posts.findCommentById(req.params.id);
-            return res.status(200).json(comments);
+            console.log(comments)
+            
+            return res.status(200).json();
         }
         res.status(404).json({ message: "The post with the specified ID does not exist" });
     } catch (e) {
